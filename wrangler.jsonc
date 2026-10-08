@@ -1,0 +1,13 @@
+{
+  // The name must match the "Project name" you typed in Cloudflare.
+  "name": "yaktonian-equity",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  // Cloudflare creates this storage for you on the first deploy.
+  "kv_namespaces": [{ "binding": "YQ" }]
+}

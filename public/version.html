@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Site check</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:30px auto;padding:0 16px}li{margin:10px 0;list-style:none}b.ok{color:#0a7d4f}b.no{color:#c0392b}small{color:#555;display:block}</style></head>
+<body><h2>Site check</h2><p>Open this page on your live site (yourdomain/version.html).</p><ul id="r">Checking...</ul>
+<script src="assets/data.js"></script>
+<script>
+(async()=>{const r=document.getElementById('r');r.innerHTML='';
+const row=(ok,t,s)=>{r.innerHTML+=`<li><b class="${ok?'ok':'no'}">${ok?'OK':'PROBLEM'}</b> ${t}${s?`<small>${s}</small>`:''}</li>`};
+const get=async p=>{try{const x=await fetch(p+(p.includes('?')?'&':'?')+'nocache='+Date.now(),{cache:'no-store'});return x.ok?await x.text():null}catch(e){return null}};
+const a=await get('assets/app.js');
+row(!!a&&a.includes('yq-theme')&&a.includes("tab=='front'"),'assets/app.js is the NEW version',a===null?'File not found at assets/app.js. Put app.js inside the assets folder.':(a.includes('yq-theme')?'':'This is an OLD app.js. Replace assets/app.js with the new one.'));
+const c=await get('assets/style.css');
+row(!!c&&c.includes('data-theme=dark'),'assets/style.css is the NEW version (dark mode)',c===null?'File not found at assets/style.css.':(c.includes('data-theme=dark')?'':'This is an OLD style.css. Replace assets/style.css.'));
+const d=await get('assets/data.js');
+const isFn=!!d&&/Cloudflare Pages Function/.test(d.slice(0,200));
+row(typeof window.YQ_DEFAULT==='object'&&!isFn,'assets/data.js is your site data',d===null?'File not found at assets/data.js.':(isFn?'This is the Cloudflare FUNCTION file. It belongs in functions/api/data.js, not assets/. Put your site data file in assets/data.js.':(typeof window.YQ_DEFAULT==='object'?'':'It does not define window.YQ_DEFAULT.')));
+const h=await get('index.html');
+row(!!h&&h.includes('app.js?v=7'),'index.html points at the v7 files',h&&!h.includes('app.js?v=7')?'Replace index.html (and the other pages) with the new ones.':'');
+let api='none';try{const x=await fetch('api/data',{cache:'no-store'});api=x.status}catch(e){}
+r.innerHTML+=`<li>Live saving (api/data): <b>${api==200?'on':'off'}</b><small>Status ${api}. Off is normal on GitHub Pages: admin changes then save only in that browser.</small></li>`;
+r.innerHTML+=`<li>Admin saved in this browser: <b>${localStorage.getItem('yq-data')?'yes':'no'}</b><small>Not a problem. The new tabs do not depend on it.</small></li>`;
+})();
+</script></body></html>

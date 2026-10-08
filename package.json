@@ -1,0 +1,6 @@
+{
+  "name": "yaktonian-equity",
+  "private": true,
+  "type": "module",
+  "devDependencies": { "wrangler": "^4.45.0" }
+}
