@@ -26,7 +26,16 @@ function check(request, env) {
   return null;
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
+  if (new URL(request.url).searchParams.get('debug') === '1') {
+    return J({
+      note: 'Setting NAMES only, never values.',
+      passwordSecretFound: !!findSecret(env),
+      passwordSecretLength: findSecret(env).length,
+      storageFound: !!env.YQ,
+      settingNames: Object.keys(env).filter((k) => k !== 'ASSETS'),
+    });
+  }
   if (!env.YQ) return J({ error: 'KV not configured' }, 404);
   const v = await env.YQ.get('data');
   return new Response(v || 'null', { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
