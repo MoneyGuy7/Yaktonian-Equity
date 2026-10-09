@@ -3,10 +3,25 @@
 const J = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 
+const clean = (v) => {
+  let s = String(v == null ? '' : v).trim();
+  if (s.length > 1 && ((s[0] === '"' && s.endsWith('"')) || (s[0] === "'" && s.endsWith("'")))) s = s.slice(1, -1).trim();
+  return s;
+};
+
+// Finds the secret even if its name has different capitals, spaces or underscores.
+function findSecret(env) {
+  const key = Object.keys(env).find((k) => k.replace(/[^a-z0-9]/gi, '').toUpperCase() === 'ADMINPASSWORD' && typeof env[k] === 'string');
+  return key ? clean(env[key]) : '';
+}
+
 function check(request, env) {
-  const want = String(env.ADMIN_PASSWORD == null ? '' : env.ADMIN_PASSWORD).trim();
-  if (!want) return J({ error: 'ADMIN_PASSWORD secret is not set on this Worker' }, 500);
-  const got = String(request.headers.get('x-admin-password') || '').trim();
+  const want = findSecret(env);
+  if (!want) {
+    const names = Object.keys(env).filter((k) => k !== 'ASSETS');
+    return J({ error: 'ADMIN_PASSWORD secret is not set on the Worker that is running this site.', settingsThisWorkerCanSee: names }, 500);
+  }
+  const got = clean(request.headers.get('x-admin-password'));
   if (got !== want) return J({ error: 'Wrong password' }, 401);
   return null;
 }
