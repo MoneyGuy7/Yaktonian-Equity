@@ -1,20 +1,14 @@
 // Posts feed API: public posts by the admin, with likes, accounts and replies.
-// Needs: the KV binding named YQ and the ADMIN_PASSWORD secret (same as live saving).
+// Needs: the KV binding named YQ. Admin actions need an Owner or Editor session (see admin.js).
+import { auth, audit } from './admin.js';
+
 const J = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 
-const clean = (v) => {
-  let s = String(v == null ? '' : v).trim();
-  if (s.length > 1 && ((s[0] === '"' && s.endsWith('"')) || (s[0] === "'" && s.endsWith("'")))) s = s.slice(1, -1).trim();
-  return s;
-};
-function findSecret(env) {
-  const key = Object.keys(env).find((k) => k.replace(/[^a-z0-9]/gi, '').toUpperCase() === 'ADMINPASSWORD' && typeof env[k] === 'string');
-  return key ? clean(env[key]) : '';
-}
-const isAdmin = (request, env) => {
-  const want = findSecret(env);
-  return !!want && clean(request.headers.get('x-admin-password')) === want;
+// Signed-in Owner or Editor (not Viewer), or null.
+const adminWho = async (request, env) => {
+  const a = await auth(request, env);
+  return a && a.r !== 'viewer' ? a : null;
 };
 
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -80,11 +74,14 @@ export async function onRequest({ request, env }) {
   const posts = await getPosts(env);
 
   if (a === 'post') {
-    if (!isAdmin(request, env)) return J({ error: 'Only the admin can post. Sign in at admin.html first.' }, 403);
+    const adm = await adminWho(request, env);
+    if (!adm) return J({ error: 'Only the admin can post. Sign in at admin.html first.' }, 403);
     const b = String(o.b || '').trim().slice(0, 4000);
     if (!b) return J({ error: 'Write a message first.' }, 400);
-    posts.push({ id: newId(), d: new Date().toISOString(), t: String(o.t || '').trim().slice(0, 200), b, likes: [], r: [] });
+    const t = String(o.t || '').trim().slice(0, 200);
+    posts.push({ id: newId(), d: new Date().toISOString(), t, b, likes: [], r: [] });
     await putPosts(env, posts);
+    await audit(env, request, adm, 'feed-post', 'Posted update: ' + (t || '(no title)'));
     return J({ ok: true });
   }
 
@@ -110,10 +107,12 @@ export async function onRequest({ request, env }) {
     return J({ ok: true });
   }
   if (a === 'del') {
-    if (!isAdmin(request, env)) return J({ error: 'Only the admin can delete.' }, 403);
+    const adm = await adminWho(request, env);
+    if (!adm) return J({ error: 'Only the admin can delete.' }, 403);
     if (o.rid) post.r = (post.r || []).filter((x) => x.id !== o.rid);
     else posts.splice(posts.indexOf(post), 1);
     await putPosts(env, posts);
+    await audit(env, request, adm, 'feed-delete', o.rid ? 'Deleted a reply' : 'Deleted an update');
     return J({ ok: true });
   }
   return J({ error: 'Unknown action.' }, 400);
