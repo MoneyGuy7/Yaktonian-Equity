@@ -85,6 +85,7 @@ export async function onRequest({ request, env }) {
   const url = new URL(request.url);
 
   if (request.method === 'GET') {
+    if (url.searchParams.get('inbox') && who.r !== 'viewer') return J({ inbox: await rd(env, 'inbox', []) });
     if (who.r !== 'owner') return J({ error: 'Owners only.' }, 403);
     if (url.searchParams.get('audit')) return J({ audit: await rd(env, 'audit', []) });
     if (url.searchParams.get('users')) {
@@ -99,6 +100,11 @@ export async function onRequest({ request, env }) {
   if (o.a === 'logout') {
     await env.YQ.delete('asess:' + request.headers.get('x-admin-token'));
     await audit(env, request, who, 'logout', 'Signed out');
+    return J({ ok: 1 });
+  }
+  if (o.a === 'inbox-del' && who.r !== 'viewer') {
+    await env.YQ.put('inbox', JSON.stringify((await rd(env, 'inbox', [])).filter(x => x.id !== o.id)));
+    await audit(env, request, who, 'inbox-delete', 'Deleted an enquiry');
     return J({ ok: 1 });
   }
   if (who.r !== 'owner') return J({ error: 'Owners only.' }, 403);

@@ -17,6 +17,7 @@ const LISTS = {
   flows: x => [x.d, x.type, x.amt].join('|'),
   updates: x => x.d + '|' + x.t,
   faq: x => x.q,
+  articles: x => x.slug,
 };
 const short = a => a.slice(0, 3).join(', ') + (a.length > 3 ? ' +' + (a.length - 3) + ' more' : '');
 
@@ -46,9 +47,14 @@ function diff(o, n) {
   return { text: parts.join('; '), removed, emptied };
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   if (!env.YQ) return out({ error: 'KV not configured' }, 404);
-  return new Response((await env.YQ.get('data')) || 'null', { headers: J });
+  const raw = (await env.YQ.get('data')) || 'null';
+  // Draft articles are only sent to a signed-in admin.
+  if (!raw.includes('"status":"draft"') || (await auth(request, env))) return new Response(raw, { headers: J });
+  const d = JSON.parse(raw);
+  d.articles = (d.articles || []).filter(a => a.status === 'published');
+  return out(d);
 }
 
 export async function onRequestPost({ request, env }) {

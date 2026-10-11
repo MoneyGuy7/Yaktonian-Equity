@@ -90,3 +90,22 @@ select{min-width:90px}
 @media(max-width:860px){.split2[style*="1fr 1fr"]{grid-template-columns:1fr!important}}
 .head{flex-wrap:wrap}.pc{min-width:0}
 @media(max-width:520px){#pck,#cmo,#eqo,#cgo,#glo,#spo,#pso{grid-template-columns:1fr 1fr!important}#pck .kpi,#cmo .kpi{padding:14px}}
+
+/* ---- v9: plainer, editorial look ---- */
+:root:not([data-theme=dark]){--bg:#faf8f4;--card:#fffefb;--ink:#1d2733;--line:#e4dfd5;--blue:#27567f;--mute:#625f58}
+header{position:static;border-bottom:1px solid var(--ink)}
+.mark{background:transparent;color:var(--ink);border:1.5px solid var(--ink);border-radius:0}
+[data-theme=dark] .mark{background:transparent;color:var(--ink);border-color:var(--ink)}
+nav a{border-radius:0;padding:8px 10px;border-bottom:2px solid transparent}
+nav a:hover{background:transparent;border-bottom-color:var(--line)}nav a.on{background:transparent;border-bottom-color:var(--ink);color:var(--ink)}
+nav a.cta{border-radius:0;background:transparent;color:var(--ink);border:1px solid var(--ink);margin-left:8px}nav a.cta:hover{background:var(--ink);color:var(--bg)}
+[data-theme=dark] nav a.cta{background:transparent;color:var(--ink);border-color:var(--ink)}[data-theme=dark] nav a.on{background:transparent}
+.card{border-radius:2px;box-shadow:none;background:var(--card)}
+.kpi{background:transparent!important;border:0;border-top:2px solid var(--ink);border-radius:0;padding:12px 0 0}
+.btn{border-radius:2px}.btn.sm{padding:6px 11px}.b{border-radius:2px}.seg,input,textarea,select{border-radius:2px}
+h1{font-weight:500;letter-spacing:-.02em}.big{font-weight:500}
+th{background:transparent;text-transform:uppercase;font-size:11.5px;letter-spacing:.06em}tr:hover td{background:transparent}
+.lead{font-size:17px}.draw{animation:none;stroke-dashoffset:0}
+.art{max-width:66ch}.art h1{margin-bottom:18px}.art h2{font-size:23px;margin:1.7em 0 .5em}.art h3{margin:1.4em 0 .4em}.art p,.art li{margin:0 0 1em}.art ul{padding-left:1.2em}
+.art a,.upd a b{text-decoration:underline;text-underline-offset:3px}
+@media print{header,footer,.np,.tabs{display:none!important}body{background:#fff}main{padding:0}.card{break-inside:avoid}}
