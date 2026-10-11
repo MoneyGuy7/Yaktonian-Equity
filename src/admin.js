@@ -50,10 +50,13 @@ export async function auth(request, env) {
 // POST /api/data lands here (see data.js). Headers: x-admin-user (blank = master), x-admin-password.
 export async function login(request, env) {
   if (!env.YQ) return J({ error: 'KV not configured' }, 404);
-  const h = request.headers, ip = h.get('cf-connecting-ip') || 'x', rl = 'rl:' + ip;
-  const tries = +((await env.YQ.get(rl)) || 0);
-  if (tries >= 10) return J({ error: 'Too many attempts. Try again in 10 minutes.' }, 429);
+  const h = request.headers, ip = h.get('cf-connecting-ip') || 'noip';
   const u = String(h.get('x-admin-user') || '').trim().toLowerCase(), pw = String(h.get('x-admin-password') || '');
+  // Failed attempts are counted per username AND per visitor address, so one person
+  // mistyping can never lock out anyone else (or a different account).
+  const rl = 'rl:' + (u || 'master') + ':' + ip;
+  const tries = +((await env.YQ.get(rl)) || 0);
+  if (tries >= 10) return J({ error: 'Too many wrong attempts from this device. Wait 15 minutes and try again.' }, 429);
   let who = null;
   if (!u) {
     const want = String(env.ADMIN_PASSWORD == null ? '' : env.ADMIN_PASSWORD).trim();
@@ -64,10 +67,11 @@ export async function login(request, env) {
     if (a && same(await pbkdf2(pw, a.s), a.h)) { who = { u, r: a.r }; a.l = new Date().toISOString(); await env.YQ.put('admins', JSON.stringify(us)); }
   }
   if (!who) {
-    await env.YQ.put(rl, String(tries + 1), { expirationTtl: 600 });
+    await env.YQ.put(rl, String(tries + 1), { expirationTtl: 900 });
     await audit(env, request, { u: u || 'master', r: '' }, 'login-failed', 'Wrong ' + (u ? 'username or ' : '') + 'password');
     return J({ error: 'Wrong username or password.' }, 401);
   }
+  await env.YQ.delete(rl);
   const tok = crypto.randomUUID() + crypto.randomUUID();
   await env.YQ.put('asess:' + tok, JSON.stringify(who), { expirationTtl: 43200 });
   await audit(env, request, who, 'login', 'Signed in');
@@ -103,7 +107,7 @@ export async function onRequest({ request, env }) {
   if (o.a === 'user-add') {
     const pw = String(o.p || '');
     if (!/^[a-z0-9_.-]{3,24}$/.test(u) || u === 'master') return J({ error: 'Username: 3-24 letters, numbers, . _ or -.' }, 400);
-    if (pw.length < 8) return J({ error: 'Password must be 8+ characters.' }, 400);
+    if (pw.length < 10) return J({ error: 'Password must be 10+ characters.' }, 400);
     if (!ROLES.includes(o.role)) return J({ error: 'Pick a role.' }, 400);
     if (us[u]) return J({ error: 'That username already exists.' }, 409);
     const s = crypto.randomUUID();
@@ -123,7 +127,7 @@ export async function onRequest({ request, env }) {
   }
   if (o.a === 'user-password') {
     const pw = String(o.p || '');
-    if (pw.length < 8) return J({ error: 'Password must be 8+ characters.' }, 400);
+    if (pw.length < 10) return J({ error: 'Password must be 10+ characters.' }, 400);
     const s = crypto.randomUUID(); us[u].s = s; us[u].h = await pbkdf2(pw, s);
     await env.YQ.put('admins', JSON.stringify(us));
     await audit(env, request, who, 'user-password', 'Reset password for ' + u);
