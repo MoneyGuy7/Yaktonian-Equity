@@ -8,6 +8,6 @@
     "binding": "ASSETS",
     "run_worker_first": ["/api/*", "/sitemap.xml", "/robots.txt", "/articles/*"]
   },
-  // Cloudflare creates this storage for you on the first deploy.
-  "kv_namespaces": [{ "binding": "YQ" }]
+  // Existing KV namespace "yaktonian-equity-yq" (pinned so deploys do not try to recreate it).
+  "kv_namespaces": [{ "binding": "YQ", "id": "9ad3fdbcb7f44789a51585dd8d2cb40e" }]
 }
