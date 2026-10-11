@@ -1,8 +1,27 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Home · Yaktonian Equity</title><meta name="description" content="Yaktonian Equity publishes every daily gain and every position so you can see how your capital is invested.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css?v=9"></head>
-<body data-page="home"><div id="app"></div>
-<script src="assets/data.js?v=9"></script><script src="assets/app.js?v=9"></script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yakton Games</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1>Yakton Games</h1><input id="q" type="search" placeholder="Search games" aria-label="Search games"></header>
+<div class="line"></div>
+<main>
+  <section id="stage" hidden>
+    <h2 id="gt"></h2>
+    <p id="help"></p>
+    <div id="game"></div>
+    <p id="st" aria-live="polite"></p>
+    <div class="bar"><button id="again" type="button">Restart</button><button id="fs" type="button">Fullscreen</button><button id="back" type="button">Back to games</button></div>
+  </section>
+  <div id="chips"></div>
+  <div id="grid"></div>
+</main>
+<script src="games.js"></script>
+<script src="cars.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>

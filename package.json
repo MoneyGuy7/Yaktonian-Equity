@@ -1,6 +1,6 @@
 {
-  "name": "yaktonian-equity",
+  "name": "yakton-games",
   "private": true,
-  "type": "module",
-  "devDependencies": { "wrangler": "^4.45.0" }
+  "scripts": { "dev": "wrangler dev", "deploy": "wrangler deploy" },
+  "devDependencies": { "wrangler": "^4" }
 }

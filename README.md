@@ -1,11 +1,24 @@
-# Yaktonian Equity (Cloudflare Workers)
-- Website files are in `public/`. Server code is `worker.js` and `src/`.
-- Cloudflare settings: Build command empty, Deploy command `npx wrangler deploy`, Path empty.
-- After the first deploy, add a SECRET named ADMIN_PASSWORD in the Worker's Settings > Variables and Secrets.
-- Open /version.html on your live site to check everything is in place.
+# Yakton Games
 
-## Setup for the new features
-- **Enquiry form**: submissions are saved in Admin > Inbox automatically. To also get them by email, add secrets `RESEND_API_KEY` and `CONTACT_TO` (your email) in Settings > Variables and Secrets. A free Resend account can send to your own address without a domain; later add `CONTACT_FROM` once you verify a domain.
-- **Articles**: Admin > Articles. Only articles set to "published" are public, at `/articles/<link>`, with their own title, description, canonical link and structured data.
-- **Sitemap and robots.txt** are generated at `/sitemap.xml` and `/robots.txt`. Submit the sitemap in Google Search Console.
-- **Calculator pages**: `public/tools/*.html`. **Fact sheet**: Profits page, then Print > Save as PDF.
+A single page of browser games, served by a Cloudflare Worker at https://games.yakton.net.
+
+Games: Traffic Racer, Pizza Rush, Pizza Clicker, Snake, 2048, Memory Match, Tic-Tac-Toe, Minesweeper, Reaction Time.
+
+## Deploy from GitHub
+
+1. Create a GitHub repo and push this folder to it.
+2. In the Cloudflare dashboard: Workers & Pages > Create > Import a repository, and pick the repo.
+3. Leave the build command empty. Set the deploy command to `npx wrangler deploy`.
+4. Every push to the main branch now deploys. The `routes` entry in `wrangler.jsonc` attaches
+   games.yakton.net (the yakton.net zone must be on your Cloudflare account).
+
+## Run locally
+
+    npm install
+    npm run dev
+
+## Add a game
+
+Write a function `myGame(el)` that draws into `el` (see `public/cars.js`), and add an entry to the `G` list in `public/boot.js`.
+Use `st("text")` for the status line and `best(id, score)` to keep a local high score.
+Return a cleanup function if you start timers.
