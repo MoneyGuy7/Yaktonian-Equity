@@ -1,1 +1,0 @@
-export const CALCS = [["equity-stake-calculator", "Equity stake calculator"], ["compound-growth-calculator", "Compound growth calculator"], ["cagr-calculator", "CAGR calculator"], ["savings-goal-calculator", "Savings goal calculator"], ["stock-profit-loss-calculator", "Stock profit and loss calculator"], ["position-size-calculator", "Position size calculator"]];
